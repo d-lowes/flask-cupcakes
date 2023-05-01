@@ -4,7 +4,7 @@ import os
 
 from flask import Flask, jsonify, request
 
-from models import connect_db, db, Cupcake
+from models import connect_db, db, Cupcake, DEFAULT_IMG_URL
 
 app = Flask(__name__)
 
@@ -61,3 +61,37 @@ def create_cupcake():
     serialized = cupcake.serialize()
 
     return (jsonify(cupcake=serialized), 201)
+
+@app.patch("/api/cupcakes/<int:id>")
+def update_cupcake(id):
+    """update cupcake 
+    Respond with JSON of the newly-updated cupcake, like this: {cupcake: 
+    {id, flavor, size, rating, image_url}}."""
+
+    cupcake = Cupcake.query.get_or_404(id)
+
+    cupcake.flavor = request.json.get("flavor", cupcake.flavor)
+    cupcake.size = request.json.get("size", cupcake.size)
+    cupcake.rating = request.json.get("rating", cupcake.rating)
+    if "image_url" in request.json:
+        cupcake.image_url = request.json["image_url"] or DEFAULT_IMG_URL
+
+    db.session.commit()
+
+    serialized = cupcake.serialize()
+
+    return jsonify(cupcake=serialized)
+
+@app.delete("/api/cupcakes/<int:id>")
+def delete_cupcake(id):
+    """delete cupcake 
+    Respond with JSON of deleted cupcake id, like this: {deleted: [cupcake-id]}."""
+
+    cupcake = Cupcake.query.get_or_404(id)
+
+    db.session.delete(cupcake)
+    db.session.commit()
+
+    return jsonify(deleted=id)
+
+
