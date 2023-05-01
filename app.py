@@ -2,7 +2,7 @@
 
 import os
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 
 from models import connect_db, db, Cupcake, DEFAULT_IMG_URL
 
@@ -14,6 +14,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     "DATABASE_URL", "postgresql:///cupcakes")
 
 connect_db(app)
+@app.get("/")
+def home():
+    """Display new cupcake form and list of cupcakes"""
+
+    return render_template("home.html")
 
 @app.get("/api/cupcakes")
 def get_cupcakes():
@@ -64,8 +69,8 @@ def create_cupcake():
 
 @app.patch("/api/cupcakes/<int:id>")
 def update_cupcake(id):
-    """update cupcake 
-    Respond with JSON of the newly-updated cupcake, like this: {cupcake: 
+    """update cupcake
+    Respond with JSON of the newly-updated cupcake, like this: {cupcake:
     {id, flavor, size, rating, image_url}}."""
 
     cupcake = Cupcake.query.get_or_404(id)
@@ -84,7 +89,7 @@ def update_cupcake(id):
 
 @app.delete("/api/cupcakes/<int:id>")
 def delete_cupcake(id):
-    """delete cupcake 
+    """delete cupcake
     Respond with JSON of deleted cupcake id, like this: {deleted: [cupcake-id]}."""
 
     cupcake = Cupcake.query.get_or_404(id)
